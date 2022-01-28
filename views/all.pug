@@ -1,0 +1,39 @@
+extends ../../views/base.pug
+
+block append styles
+  link(href="/projects/e-commerce/static/css/e-commerce.css" rel="stylesheet")
+
+block append scripts
+  if cookieOptOut.acceptAnalytics
+    script(
+      id="recaptchaAPI"
+      type="text/javascript"
+      src=`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`
+    )
+  script(type="text/javascript" src="/static/js/vue.runtime.global.prod.js")
+  script(type="text/javascript" src="/static/js/vue-router.global.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/ECommerce.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/AllListings.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/AddProduct.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/Category.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/Product.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/Checkout.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/Confirmation.umd.min.js")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/NotFound.umd.min.js")
+  script(type="text/javascript" src="https://js.stripe.com/v3")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/main.js")
+
+block content
+  div(class="alert alert-info px-4 mb-0") Currently, only test data is being used. No actual payments are made.
+
+  div(class="position-relative container-fluid px-0")
+    header(class="row p-4 g-0")
+      h1(class="display-3") Products
+
+  div(
+    id="app"
+    data-recaptchaSiteKey=recaptchaSiteKey
+    data-username=loggedInAs
+    data-admin=admin
+  )
+  script(type="text/javascript" src="/projects/e-commerce/static/js/products.js")
