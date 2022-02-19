@@ -35,7 +35,7 @@ var routes = [
     path: '/add', 
     name: 'add', 
     component: AddProduct, 
-    props: { categories: categories },
+    props: { categories: categories, listings: listings },
   },
   { 
     path: '/checkout', 
@@ -194,9 +194,6 @@ var app = Vue.createApp({
         if (!/^[A-Za-z0-9_]{1,50}$/.test(cart[i].id)) {
           return false;
         }
-        if (!/^[A-Za-z0-9 \-'\/\._]{1,150}$/.test(cart[i].image)) {
-          return false;
-        }
         if (!/^[A-Za-z0-9 \-']{1,50}$/.test(cart[i].category)) {
           return false;
         }
@@ -210,7 +207,6 @@ var app = Vue.createApp({
           return false;
         }
         cart[i].id = DOMPurify.sanitize(cart[i].id);
-        cart[i].image = DOMPurify.sanitize(cart[i].image);
         cart[i].category = DOMPurify.sanitize(cart[i].category);
         cart[i].product = DOMPurify.sanitize(cart[i].product);
         cart[i].price = DOMPurify.sanitize(cart[i].price);
@@ -666,19 +662,23 @@ var app = Vue.createApp({
       if (document.getElementById("addProduct")) {
         document.getElementById("addProduct").disabled = true;
       }
+      var formData = new FormData();
       if (data) {
-        data.title = DOMPurify.sanitize(data.title);
-        data.category = DOMPurify.sanitize(data.category);
-        data.price = DOMPurify.sanitize(data.price);
-        data.description = DOMPurify.sanitize(data.description);
-        data.shippable = DOMPurify.sanitize(data.shippable.toString());
-        data.weight = DOMPurify.sanitize(data.weight);
-        data.width = DOMPurify.sanitize(data.width);
-        data.length = DOMPurify.sanitize(data.length);
-        data.height = DOMPurify.sanitize(data.height);
-        data.time = DOMPurify.sanitize(getTime());
+        formData.append('title', DOMPurify.sanitize(data.title));
+        formData.append('category', DOMPurify.sanitize(data.category));
+        formData.append('price', DOMPurify.sanitize(data.price));
+        formData.append('description', DOMPurify.sanitize(data.description));
+        formData.append('shippable', DOMPurify.sanitize(data.shippable.toString()));
+        formData.append('weight', DOMPurify.sanitize(data.weight));
+        formData.append('width', DOMPurify.sanitize(data.width));
+        formData.append('length', DOMPurify.sanitize(data.length));
+        formData.append('height', DOMPurify.sanitize(data.height));
+        formData.append('time', DOMPurify.sanitize(getTime()));
+      }
+      if (data.image) {
+        formData.append('image', document.getElementById("pImage").files[0]);
       } else {
-        data = {};
+        formData.append('image', null);
       }
       var context = this;
       var httpRequest = new XMLHttpRequest();
@@ -689,12 +689,11 @@ var app = Vue.createApp({
       grecaptcha.ready(function() {
         grecaptcha.execute(DOMPurify.sanitize(getRecaptchaSiteKey()), { action: 'add' })
         .then(function(recaptchaToken) {
-          data['g-recaptcha-response'] = DOMPurify.sanitize(recaptchaToken);
+          formData.append('g-recaptcha-response', DOMPurify.sanitize(recaptchaToken));
           httpRequest.open('POST', '/projects/e-commerce/add', true);
           httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-          httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
           httpRequest.setRequestHeader('CSRF-Token', DOMPurify.sanitize(getCSRF()));
-          httpRequest.send(JSON.stringify(data));
+          httpRequest.send(formData);
         });
       });
       httpRequest.onreadystatechange = function() {
@@ -832,7 +831,7 @@ function resolveLoadData(response) {
     path: '/add', 
     name: 'add', 
     component: AddProduct, 
-    props: { categories: categories },
+    props: { categories: categories, listings: listings },
   });
   router.addRoute({ 
     path: '/checkout', 

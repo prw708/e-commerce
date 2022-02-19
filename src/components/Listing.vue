@@ -25,7 +25,7 @@ div(class="container-fluid px-4")
               :class="'col-' + (12 / itemsLength)"
             )
               div(
-                class="card position-relative"
+                class="card h-100 position-relative"
                 @mouseenter="hovered[productIndex] = true"
                 @mouseleave="hovered[productIndex] = false"
               )
@@ -38,14 +38,16 @@ div(class="container-fluid px-4")
                   )
                 img(
                   class="card-img-top" 
-                  :src="listing[productIndex].image" 
+                  :src="listing[productIndex].image ? \
+                    'data:image/png;base64,' + listing[productIndex].image : \
+                    '/projects/e-commerce/static/images/product_image.png'" 
                   :alt="listing[productIndex].title"
                 )
                 div(class="card-body")
                   h5(class="card-title mb-2") {{ listing[productIndex].title }}
                   h6(class="card-subtitle text-muted mb-2") ${{ listing[productIndex].price }}
                   p(class="card-subtitle small mb-3") @{{ listing[productIndex].owner.username }}
-                  p(class="card-text mb-0") {{ listing[productIndex].description.substring(0, 100) }}
+                  p(class="card-text preserve-white-space mb-0") {{ listing[productIndex].description.substring(0, 100) }}
                 div(class="card-footer bg-white")
                   router-link(
                     class="card-link link-secondary text-decoration-none" 

@@ -140,7 +140,6 @@ export default {
         }
         this.cart.push({
           id: val.id,
-          image: val.image,
           category: val.category,
           quantity: val.quantity,
           product: val.product,

@@ -53,11 +53,44 @@ div(class="container-fluid px-4")
         maxlength="50"
         autocomplete="off"
         v-model="this.title"
+        @focus="handleTitleFocus"
+        @blur="handleTitleBlur"
+        @keydown.down.stop="handleTitleDown"
+        @keydown.up.stop="handleTitleUp"
+        @keydown.enter.stop="handleTitleSelect($event)"
+        @keyup="handleTitleFilter"
       )
+      ul(
+        v-show="showTitles"
+        class="list-group titles"
+      )
+        li(
+          v-for="(item, index) in selectedTitles"
+          :class="(activateTitle[index]) ? 'list-group-item active' : 'list-group-item'"
+          @mouseover="handleTitleOver(index)"
+          @mouseout="handleTitleOut(index)"
+          @mousedown="handleTitleClick(item)"
+        ) {{ item }}
       div(
         v-if="titleError"
         class="invalid-feedback"
       ) {{ titleError }}
+    div(class="col-12")
+      label(for="pImage" class="form-label") Image
+      input(
+        type="file"
+        id="pImage"
+        name="pImage"
+        :class="(imageError) ? 'form-control is-invalid' : 'form-control'"
+        maxlength="100"
+        autocomplete="off"
+        accept="image/*"
+        v-on:change="(e) => this.image = e.target.value"
+      )
+      div(
+        v-if="imageError"
+        class="invalid-feedback"
+      ) {{ imageError }}
     div(class="col-12")
       label(for="pPrice" class="form-label") Price
       div(class="input-group")
@@ -205,6 +238,7 @@ export default {
     'costs',
     'errors',
     'categories',
+    'listings',
   ],
   emits: [
     'quantity',
@@ -218,6 +252,7 @@ export default {
   data() {
     return {
       title: '',
+      image: '',
       category: '',
       price: '',
       description: '',
@@ -227,6 +262,7 @@ export default {
       plength: '',
       pheight: '',
       titleError: '',
+      imageError: '',
       categoryError: '',
       priceError: '',
       descriptionError: '',
@@ -237,8 +273,12 @@ export default {
       heightError: '',
       showCategories: false,
       activateCategory: [],
-      arrowIndex: -1,
+      categoryIndex: -1,
       selectedCategories: [],
+      showTitles: false,
+      activateTitle: [],
+      titleIndex: -1,
+      selectedTitles: [],
     }
   },
   watch: {
@@ -253,6 +293,15 @@ export default {
         return false;
       } else {
         this.titleError = "";
+        return true;
+      }
+    },
+    validImage() {
+      if (this.image && !/^[A-Za-z0-9 \-'.,\\:]{1,100}$/.test(this.image)) {
+        this.imageError = "Can contain A-Z, a-z, 0-9, spaces, ', ., ,, and -.";
+        return false;
+      } else {
+        this.imageError = "";
         return true;
       }
     },
@@ -275,7 +324,7 @@ export default {
       }
     },
     validDescription() {
-      if (!/^[A-Za-z0-9 \-,.!?:;'"#@$%]{0,150}$/.test(this.description)) {
+      if (!/^[A-Za-z0-9 \-,.!?:;'"#@$%\n]{0,150}$/.test(this.description)) {
         this.descriptionError = "Can be 0 to 150 characters in length.";
         return false;
       } else {
@@ -296,6 +345,9 @@ export default {
       if (!/^[0-9]{0,4}$/.test(this.weight)) {
         this.weightError = "Format must be in XXXX.";
         return false;
+      } else if (this.shippable === "true" && (!this.weight || parseInt(this.weight, 10) === 0)) {
+        this.weightError = "Must be a non-zero value.";
+        return false;
       } else {
         this.weightError = "";
         return true;
@@ -304,6 +356,9 @@ export default {
     validWidth() {
       if (!/^[0-9]{0,4}$/.test(this.pwidth)) {
         this.widthError = "Format must be in XXXX.";
+        return false;
+      } else if (this.shippable === "true" && (!this.pwidth || parseInt(this.pwidth, 10) === 0)) {
+        this.widthError = "Must be a non-zero value.";
         return false;
       } else {
         this.widthError = "";
@@ -314,6 +369,9 @@ export default {
       if (!/^[0-9]{0,4}$/.test(this.plength)) {
         this.lengthError = "Format must be in XXXX.";
         return false;
+      } else if (this.shippable === "true" && (!this.plength || parseInt(this.plength, 10) === 0)) {
+        this.lengthError = "Must be a non-zero value.";
+        return false;
       } else {
         this.lengthError = "";
         return true;
@@ -322,6 +380,9 @@ export default {
     validHeight() {
       if (!/^[0-9]{0,4}$/.test(this.pheight)) {
         this.heightError = "Format must be in XXXX.";
+        return false;
+      } else if (this.shippable === "true" && (!this.pheight || parseInt(this.pheight, 10) === 0)) {
+        this.heightError = "Must be a non-zero value.";
         return false;
       } else {
         this.heightError = "";
@@ -339,7 +400,7 @@ export default {
     },
     handleCategoryOver(index) {
       this.activateCategory[index] = true;
-      this.arrowIndex = index;
+      this.categoryIndex = index;
     },
     handleCategoryOut(index) {
       this.activateCategory[index] = false;
@@ -351,27 +412,27 @@ export default {
       for (var i = 0; i < this.selectedCategories.length; i++) {
         this.activateCategory[i] = false;
       }
-      if (this.arrowIndex + 1 > this.selectedCategories.length) {
-        this.arrowIndex = 0;
+      if (this.categoryIndex + 1 > this.selectedCategories.length) {
+        this.categoryIndex = 0;
       } else {
-        this.arrowIndex++;
+        this.categoryIndex++;
       }
-      this.activateCategory[this.arrowIndex] = true;
+      this.activateCategory[this.categoryIndex] = true;
     },
     handleCategoryUp() {
       for (var i = 0; i < this.selectedCategories.length; i++) {
         this.activateCategory[i] = false;
       }
-      if (this.arrowIndex - 1 < 0) {
-        this.arrowIndex = this.selectedCategories.length;
+      if (this.categoryIndex - 1 < 0) {
+        this.categoryIndex = this.selectedCategories.length;
       } else {
-        this.arrowIndex--;
+        this.categoryIndex--;
       }
-      this.activateCategory[this.arrowIndex] = true;
+      this.activateCategory[this.categoryIndex] = true;
     },
     handleCategorySelect(event) {
-      if (this.arrowIndex >= 0 && this.arrowIndex < this.selectedCategories.length) {
-        this.category = this.selectedCategories[this.arrowIndex];
+      if (this.categoryIndex >= 0 && this.categoryIndex < this.selectedCategories.length) {
+        this.category = this.selectedCategories[this.categoryIndex];
       }
       event.currentTarget.blur();
     },
@@ -384,8 +445,73 @@ export default {
       }
       this.selectedCategories = this.selectedCategories.slice(0, 5);
     },
+    handleTitleFocus() {
+      this.showTitles = true;
+      var titles = [];
+      if (this.selectedTitles.length === 0) {
+        for (var i = 0; i < this.listings.length; i++) {
+          for (var j = 0; j < this.listings[i].length; j++) {
+            titles.push(this.listings[i][j].title);
+          }
+        }
+        this.selectedTitles = titles.slice(0, 5);
+      }
+    },
+    handleTitleBlur() {
+      this.showTitles = false;
+    },
+    handleTitleOver(index) {
+      this.activateTitle[index] = true;
+      this.titleIndex = index;
+    },
+    handleTitleOut(index) {
+      this.activateTitle[index] = false;
+    },
+    handleTitleClick(title) {
+      this.title = title;
+    },
+    handleTitleDown() {
+      for (var i = 0; i < this.selectedTitles.length; i++) {
+        this.activateTitle[i] = false;
+      }
+      if (this.titleIndex + 1 > this.selectedTitles.length) {
+        this.titleIndex = 0;
+      } else {
+        this.titleIndex++;
+      }
+      this.activateTitle[this.titleIndex] = true;
+    },
+    handleTitleUp() {
+      for (var i = 0; i < this.selectedTitles.length; i++) {
+        this.activateTitle[i] = false;
+      }
+      if (this.titleIndex - 1 < 0) {
+        this.titleIndex = this.selectedTitle.length;
+      } else {
+        this.titleIndex--;
+      }
+      this.activateTitle[this.titleIndex] = true;
+    },
+    handleTitleSelect(event) {
+      if (this.titleIndex >= 0 && this.titleIndex < this.selectedTitles.length) {
+        this.title = this.selectedTitles[this.titleIndex];
+      }
+      event.currentTarget.blur();
+    },
+    handleTitleFilter() {
+      this.selectedTitles = [];
+      for (var i = 0; i < this.listings.length; i++) {
+        for (var j = 0; j < this.listings[i].length; j++) {
+          if (this.listings[i][j].title.indexOf(this.title) !== -1) {
+            this.selectedTitles.push(this.listings[i][j].title);
+          }
+        }
+      }
+      this.selectedTitles = this.selectedTitles.slice(0, 5);
+    },
     handleAddProductButton() {
       var validTitle = this.validTitle();
+      var validImage = this.validImage();
       var validCategory = this.validCategory();
       var validPrice = this.validPrice();
       var validDescription = this.validDescription();
@@ -394,11 +520,12 @@ export default {
       var validWidth = this.validWidth();
       var validLength = this.validLength();
       var validHeight = this.validHeight();
-      if (validTitle && validCategory && validPrice && validDescription && validShippable &&
+      if (validTitle && validImage && validCategory && validPrice && validDescription && validShippable &&
           validWeight && validWidth && validLength && validHeight) {
         this.$emit('getError', '');
         this.$emit('SendData', {
           title: this.title,
+          image: this.image,
           category: this.category,
           price: this.price,
           description: this.description,

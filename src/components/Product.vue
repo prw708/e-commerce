@@ -18,10 +18,12 @@ div(class="container-fluid px-4")
         @click="handleDeleteProductButton"
       )
   div(class="row g-4 mb-4")
-    div(class="col-12 col-sm-5")
+    div(class="col-12 col-sm-5 text-center")
       img(
         class="img-fluid"
-        :src="product.image" 
+        :src="product.image ? \
+          'data:image/png;base64,' + product.image : \
+          '/projects/e-commerce/static/images/product_image.png'" 
         :alt="product.title"
       )
     div(class="col-12 col-sm-7")
@@ -29,7 +31,7 @@ div(class="container-fluid px-4")
       h4(class="text-muted mb-3") ${{ product.price }}
       h6(class="mb-2") Posted by: {{ product.owner.username }}
       h6(class="mb-3") Amount Available: {{ product.inventoryAmount.toLocaleString('en-US') }}
-      p(class="mb-3") {{ product.description }}
+      p(class="preserve-white-space mb-3") {{ product.description }}
   div(class="row g-3 mb-5")
     div(class="col-12 col-sm-5 col-md-7 d-flex align-items-end flex-row-reverse")
       div(

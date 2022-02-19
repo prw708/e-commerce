@@ -149,27 +149,22 @@ export default {
           var path = '';
           if (pathComponents[i] === 'category') {
             if (pathComponents[i + 1]) {
-              title = pathComponents[i + 1].substring(0, 1).toUpperCase() + 
-                pathComponents[i + 1].substring(1).toLowerCase();
+              title = this.capitalize(pathComponents[i + 1]);
               path = prev.path + pathComponents[i] + '/' + pathComponents[i + 1] + '/';
             } else {
-              title = pathComponents[i].substring(0, 1).toUpperCase() + 
-                pathComponents[i].substring(1).toLowerCase();
+              title = this.capitalize(pathComponents[i]);
               path = prev.path + pathComponents[i] + '/';
             }
           } else if (pathComponents[i] === 'product') {
             if (pathComponents[i + 1]) {
-              title = pathComponents[i + 1].substring(0, 1).toUpperCase() + 
-                pathComponents[i + 1].substring(1).toLowerCase();
+              title = this.capitalize(pathComponents[i + 1]);
               path = prev.path + pathComponents[i] + '/' + pathComponents[i + 1] + '/';
             } else {
-              title = pathComponents[i].substring(0, 1).toUpperCase() + 
-                pathComponents[i].substring(1).toLowerCase();
+              title = this.capitalize(pathComponents[i]);
               path = prev.path + pathComponents[i] + '/';
             }
           } else if (pathComponents[i - 1] !== 'category' && pathComponents[i - 1] !== 'product') {
-            title = pathComponents[i].substring(0, 1).toUpperCase() + 
-              pathComponents[i].substring(1).toLowerCase();
+            title = this.capitalize(pathComponents[i]);
             path = prev.path + pathComponents[i] + '/';
           }
           urlComponents.push(prev);
@@ -186,6 +181,19 @@ export default {
     }
   },
   methods: {
+    capitalize(string) {
+      var newString = '';
+      for (var i = 0; i < string.length; i++) {
+        if (i == 0) {
+          newString += string.charAt(i).toUpperCase();
+        } else if (i > 0 && (string.charAt(i - 1) === '-' || string.charAt(i - 1) === ' ')) {
+          newString += string.charAt(i).toUpperCase();
+        } else {
+          newString += string.charAt(i);
+        }
+      }
+      return newString;
+    },
     productURL(product) {
       return product.replace(' ', '-').toLowerCase();
     },
