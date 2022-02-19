@@ -142,8 +142,8 @@ exports.add_product_post = [
   body('description', 'Can be 0 to 150 characters in length.')
     .trim()
     .isLength({ min: 0, max: 150 })
-    .matches(/^[A-Za-z0-9 \-,.!?:;\'"#@$%\n']{0,150}$/)
-    .whitelist('A-Za-z0-9 \\-,.!?:;\'"#@$%\n'),
+    .matches(/^[A-Za-z0-9 \-,.!?:;\'"#@$%\s']{0,150}$/)
+    .whitelist('A-Za-z0-9 \\-,.!?:;\'"#@$%\\s'),
   body('shippable', 'Can be true or false.')
     .trim()
     .isIn(['true', 'false'])

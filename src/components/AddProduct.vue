@@ -324,7 +324,7 @@ export default {
       }
     },
     validDescription() {
-      if (!/^[A-Za-z0-9 \-,.!?:;'"#@$%\n]{0,150}$/.test(this.description)) {
+      if (!/^[A-Za-z0-9 \-,.!?:;'"#@$%\s]{0,150}$/.test(this.description)) {
         this.descriptionError = "Can be 0 to 150 characters in length.";
         return false;
       } else {
