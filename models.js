@@ -12,7 +12,7 @@ var ProductSchema = new Schema({
     required: true,
   },
   priceId: { type: String },
-  inventoryAmount: { type: Number, required: true },
+  inventoryAmount: { type: Number, required: true, default: 100 },
   description: { type: String },
   owner: { type: Schema.Types.ObjectId, ref: 'User' },
   shippable: { type: Boolean, required: true },

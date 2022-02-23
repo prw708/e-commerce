@@ -665,6 +665,7 @@ var app = Vue.createApp({
       var formData = new FormData();
       if (data) {
         formData.append('title', DOMPurify.sanitize(data.title));
+        formData.append('inventory', DOMPurify.sanitize(data.inventory));
         formData.append('category', DOMPurify.sanitize(data.category));
         formData.append('price', DOMPurify.sanitize(data.price));
         formData.append('description', DOMPurify.sanitize(data.description));

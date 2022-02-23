@@ -92,6 +92,20 @@ div(class="container-fluid px-4")
         class="invalid-feedback"
       ) {{ imageError }}
     div(class="col-12")
+      label(for="pInventory" class="form-label") Inventory
+      input(
+        type="text"
+        id="pInventory"
+        :class="(inventoryError) ? 'form-control is-invalid' : 'form-control'"
+        maxlength="50"
+        autocomplete="off"
+        v-model="this.inventory"
+      )
+      div(
+        v-if="inventoryError"
+        class="invalid-feedback"
+      ) {{ inventoryError }}
+    div(class="col-12")
       label(for="pPrice" class="form-label") Price
       div(class="input-group")
         span(class="input-group-text") $
@@ -253,6 +267,7 @@ export default {
     return {
       title: '',
       image: '',
+      inventory: '',
       category: '',
       price: '',
       description: '',
@@ -263,6 +278,7 @@ export default {
       pheight: '',
       titleError: '',
       imageError: '',
+      inventoryError: '',
       categoryError: '',
       priceError: '',
       descriptionError: '',
@@ -302,6 +318,15 @@ export default {
         return false;
       } else {
         this.imageError = "";
+        return true;
+      }
+    },
+    validInventory() {
+      if (!/^[0-9]{0,4}$/.test(this.inventory)) {
+        this.inventoryError = "Format must be in XXXX.";
+        return false;
+      } else {
+        this.inventoryError = "";
         return true;
       }
     },
@@ -512,6 +537,7 @@ export default {
     handleAddProductButton() {
       var validTitle = this.validTitle();
       var validImage = this.validImage();
+      var validInventory = this.validInventory();
       var validCategory = this.validCategory();
       var validPrice = this.validPrice();
       var validDescription = this.validDescription();
@@ -520,12 +546,13 @@ export default {
       var validWidth = this.validWidth();
       var validLength = this.validLength();
       var validHeight = this.validHeight();
-      if (validTitle && validImage && validCategory && validPrice && validDescription && validShippable &&
-          validWeight && validWidth && validLength && validHeight) {
+      if (validTitle && validImage && validInventory && validCategory && validPrice && validDescription && 
+          validShippable && validWeight && validWidth && validLength && validHeight) {
         this.$emit('getError', '');
         this.$emit('SendData', {
           title: this.title,
           image: this.image,
+          inventory: this.inventory,
           category: this.category,
           price: this.price,
           description: this.description,

@@ -128,6 +128,12 @@ exports.add_product_post = [
     .isLength({ min: 1, max: 50 })
     .matches(/^[A-Za-z0-9 \-']{1,50}$/)
     .whitelist('A-Za-z0-9 \\-\''),
+  body('inventory', 'Format must be in XXXX.')
+    .trim()
+    .escape()
+    .isInt({ min: 0, max: 9999, allow_leading_zeroes: false })
+    .toInt()
+    .optional({ checkFalsy: true }),
   body('category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -288,6 +294,9 @@ exports.add_product_post = [
               if (req.file) {
                 existing.image = req.file.buffer.toString('base64');
               }
+              if (data.inventory) {
+                existing.inventoryAmount = data.inventory;
+              }
               existing.category = data.category;
               existing.price = data.price;
               existing.priceId = doc.id;
@@ -300,10 +309,13 @@ exports.add_product_post = [
                 height: data.height,
               };
             } else {
-              const INVENTORY_AMOUNT = 100;
+              let INVENTORY_AMOUNT = 100;
               let IMAGE = '';
               if (req.file) {
                 IMAGE = req.file.buffer.toString('base64');
+              }
+              if (data.inventory) {
+                INVENTORY_AMOUNT = data.inventory;
               }
               existing = new productModels.product({
                 id: productId,
