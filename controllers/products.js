@@ -315,7 +315,7 @@ exports.add_product_post = [
                 };
               }
             } else {
-              let INVENTORY_AMOUNT = 100;
+              let INVENTORY_AMOUNT = 0;
               let IMAGE = '';
               if (req.file) {
                 IMAGE = req.file.buffer.toString('base64');
