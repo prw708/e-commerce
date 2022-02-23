@@ -300,14 +300,20 @@ exports.add_product_post = [
               existing.category = data.category;
               existing.price = data.price;
               existing.priceId = doc.id;
-              existing.description = data.description;
+              if (data.description) {
+                existing.description = data.description;
+              }
               existing.shippable = data.shippable;
-              existing.weight = data.weight;
-              existing.size = {
-                width: data.width,
-                length: data.length,
-                height: data.height,
-              };
+              if (data.weight) {
+                existing.weight = data.weight;
+              }
+              if (data.width && data.length && data.height) {
+                existing.size = {
+                  width: data.width,
+                  length: data.length,
+                  height: data.height,
+                };
+              }
             } else {
               let INVENTORY_AMOUNT = 100;
               let IMAGE = '';
