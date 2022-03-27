@@ -81,7 +81,7 @@ exports.load_post = [
               res.render('../e-commerce/views/confirm', {
                 title: 'Load Data',
                 error: 'Products loaded successfully!',
-                back: 1
+                back: 2
               });
             }
           })
@@ -95,7 +95,7 @@ exports.load_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Load Data',
           error: 'An error occurred while loading the data. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -114,7 +114,7 @@ exports.load_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Load Data',
           error: 'An error occurred while loading the data. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -364,7 +364,7 @@ exports.add_product_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Add Data',
             error: 'An error occurred while adding the product. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -382,7 +382,7 @@ exports.add_product_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Add Data',
           error: 'An error occurred while adding the product. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -478,7 +478,7 @@ exports.delete_product_post = [
                 res.render('../e-commerce/views/confirm', {
                   title: 'Delete Data',
                   error: 'Product not found.',
-                  back: 1
+                  back: 2
                 });
               }
             }
@@ -496,7 +496,7 @@ exports.delete_product_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Delete Data',
             error: 'An error occurred while deleting the product. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -511,7 +511,7 @@ exports.delete_product_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Delete Data',
           error: 'An error occurred while deleting the product. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -712,7 +712,7 @@ exports.create_invoice_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Checkout',
             error: 'An error occurred while creating the invoice. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -727,7 +727,7 @@ exports.create_invoice_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
           error: 'An error occurred while creating the invoice. Please try again later.',
-          back: 1,
+          back: 2,
         });
       }
     }
@@ -1055,7 +1055,7 @@ exports.shipping_cost_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Checkout',
             error: 'An error occurred while getting shipping costs. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -1070,7 +1070,7 @@ exports.shipping_cost_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
           error: 'An error occurred while getting shipping costs. Please try again later.',
-          back: 1,
+          back: 2,
         });
       }
     }
@@ -1290,7 +1290,7 @@ exports.get_tax_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Checkout',
             error: 'An error occurred while getting the tax. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -1305,7 +1305,7 @@ exports.get_tax_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
           error: 'An error occurred while getting the tax. Please try again later.',
-          back: 1,
+          back: 2,
         });
       }
     }
@@ -1360,7 +1360,7 @@ exports.create_payment_intent_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
           error: 'An error occurred while creating the payment intent. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -1374,7 +1374,7 @@ exports.create_payment_intent_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
           error: 'An error occurred while creating the payment intent. Please try again later.',
-          back: 1,
+          back: 2,
         });
       }
     }
@@ -1624,7 +1624,7 @@ exports.log_payment_post = [
           res.render('../e-commerce/views/confirm', {
             title: 'Log Payment',
             error: 'An error occurred while logging the payment. Please try again later.',
-            back: 1
+            back: 2
           });
         }
       }
@@ -1639,7 +1639,7 @@ exports.log_payment_post = [
         res.render('../e-commerce/views/confirm', {
           title: 'Log Payment',
           error: 'An error occurred while logging the payment. Please try again later.',
-          back: 1
+          back: 2
         });
       }
     }
@@ -1650,7 +1650,7 @@ exports.log_confirm_get = function(req, res, next) {
   res.render('../e-commerce/views/confirm', {
     title: 'Log Payment',
     success: 'Payment logged successfully!',
-    back: 1,
+    back: 2,
   });
 };
 
@@ -1658,6 +1658,6 @@ exports.payment_confirm_get = function(req, res, next) {
   res.render('../e-commerce/views/confirm', {
     title: 'Payment Processed',
     success: 'Payment processed successfully!',
-    back: 1,
+    back: 2,
   });
 };
