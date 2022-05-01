@@ -2985,7 +2985,7 @@ var es_symbol_description = __webpack_require__("e01a");
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/pug-plain-loader!./node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/vue-loader-v16/dist??ref--1-1!./src/components/Category.vue?vue&type=template&id=9748d5ba&lang=pug
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/pug-plain-loader!./node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/vue-loader-v16/dist??ref--1-1!./src/components/Category.vue?vue&type=template&id=6a77d9c8&lang=pug
 
 
 
@@ -3051,7 +3051,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }
     }, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withDirectives"])(Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("span", _hoisted_8, null, 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], $data.hovered[productIndex]]])], 8, _hoisted_7), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("img", {
       class: "card-img-top",
-      src: $props.listing[productIndex].image,
+      src: $props.listing[productIndex].image ? 'data:image/png;base64,' + $props.listing[productIndex].image : '/projects/e-commerce/static/images/product_image.png',
       alt: $props.listing[productIndex].title
     }, null, 8, _hoisted_9), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", _hoisted_10, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("h5", _hoisted_11, Object(external_commonjs_vue_commonjs2_vue_root_Vue_["toDisplayString"])($props.listing[productIndex].title), 1), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("h6", _hoisted_12, "$" + Object(external_commonjs_vue_commonjs2_vue_root_Vue_["toDisplayString"])($props.listing[productIndex].price), 1), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("p", _hoisted_13, "@" + Object(external_commonjs_vue_commonjs2_vue_root_Vue_["toDisplayString"])($props.listing[productIndex].owner.username), 1), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("p", _hoisted_14, Object(external_commonjs_vue_commonjs2_vue_root_Vue_["toDisplayString"])($props.listing[productIndex].description.substring(0, 100)), 1)]), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", _hoisted_15, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_router_link, {
       class: "card-link link-secondary text-decoration-none",
@@ -3070,7 +3070,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }, 1032, ["to"])])], 40, _hoisted_6)], 2);
   }), 256))])]);
 }
-// CONCATENATED MODULE: ./src/components/Category.vue?vue&type=template&id=9748d5ba&lang=pug
+// CONCATENATED MODULE: ./src/components/Category.vue?vue&type=template&id=6a77d9c8&lang=pug
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.exec.js
 var es_regexp_exec = __webpack_require__("ac1f");

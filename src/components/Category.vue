@@ -28,7 +28,9 @@ div(class="container-fluid px-4")
             )
           img(
             class="card-img-top" 
-            :src="listing[productIndex].image" 
+            :src="listing[productIndex].image ? \
+              'data:image/png;base64,' + listing[productIndex].image : \
+              '/projects/e-commerce/static/images/product_image.png'" 
             :alt="listing[productIndex].title"
           )
           div(class="card-body")
