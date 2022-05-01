@@ -1,3 +1,16 @@
+import * as Vue from 'vue';
+import * as VueRouter from 'vue-router';
+import ECommerce from './ECommerce.common';
+import AllListings from './AllListings.common';
+import AddProduct from './AddProduct.common';
+import Category from './Category.common';
+import Product from './Product.common';
+import Checkout from './Checkout.common';
+import Confirmation from './Confirmation.common';
+import NotFound from './NotFound.common';
+import DOMPurify from 'dompurify';
+import Big from 'big.js';
+
 var stripe = Stripe("pk_test_51JhL46KClKuuonjPg5XPB2R9mumKBPwE5Eh8aG63dfcV7PCtVS6JfhFvVzdOdh6FrDrqJPelXhUELvbOIuINOTQe00kOWU0YpH");
 
 function getTime() {
@@ -115,6 +128,9 @@ var routes = [
 
 var router = VueRouter.createRouter({
   history: VueRouter.createWebHistory('/projects/e-commerce'),
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 };
+  },
   routes,
 });
 
@@ -221,8 +237,8 @@ var app = Vue.createApp({
         return false;
       }
       var sanitizedCart = this.validateCart(val.cart);
+      var data = {};
       if (sanitizedCart) {
-        data = {};
         data.cart = sanitizedCart;
         data.time = DOMPurify.sanitize(getTime());
         if (this.stripeKey.invoiceId) {
@@ -281,8 +297,8 @@ var app = Vue.createApp({
       this.success = '';
       this.error = '';
       var sanitizedCart = this.validateCart(val.cart);
+      var data = {};
       if (sanitizedCart) {
-        data = {};
         data.cart = sanitizedCart;
         data.time = DOMPurify.sanitize(getTime());
         if (this.stripeKey.invoiceId) {
@@ -346,8 +362,8 @@ var app = Vue.createApp({
       this.costs.total = new Big(0).toFixed(2);
       this.costs.total_tax_amounts = new Big(0).toFixed(2);
       var sanitizedCart = this.validateCart(cart);
+      var data = {};
       if (sanitizedCart) {
-        data = {};
         data.cart = sanitizedCart;
         data.time = DOMPurify.sanitize(getTime());
         if (this.stripeKey.invoiceId) {
