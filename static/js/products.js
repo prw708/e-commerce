@@ -11,6 +11,9 @@ import NotFound from './NotFound.common';
 import DOMPurify from 'dompurify';
 import Big from 'big.js';
 
+Big.DP = 2;
+Big.RM = Big.roundHalfUp;
+
 var stripe = Stripe("pk_test_51JhL46KClKuuonjPg5XPB2R9mumKBPwE5Eh8aG63dfcV7PCtVS6JfhFvVzdOdh6FrDrqJPelXhUELvbOIuINOTQe00kOWU0YpH");
 
 function getTime() {
