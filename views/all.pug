@@ -20,6 +20,10 @@ block content
     header(class="row p-4 g-0")
       h1(class="display-3") Products
 
+    if !cookieOptOut.acceptAnalytics
+      div(class="analyticsCookieNotice")
+        p(class="alert alert-danger px-4 mb-0") Cookie settings must be set to accept analytics cookies to load all elements.
+
   div(
     id="app"
     data-recaptchaSiteKey=recaptchaSiteKey
