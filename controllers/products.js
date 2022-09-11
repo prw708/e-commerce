@@ -15,9 +15,7 @@ const Big = require('big.js');
 Big.DP = 2;
 Big.RM = Big.roundHalfUp;
 
-const mongoose = require('mongoose');
-const accountModels = require('../../account/models.js');
-const productModels = require('../models.js');
+const web = require('../../dbWeb.js');
 
 const BASEPATH = '/projects/e-commerce';
 
@@ -28,7 +26,7 @@ exports.home_get = function(req, res, next) {
       admin: 'false',
     });
   } else {
-    accountModels.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
+    web.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
       .then(function(user) {
         if (!user) {
           res.render('../e-commerce/views/all', {
@@ -67,7 +65,7 @@ exports.load_post = [
         return Promise.reject('Failed reCAPTCHA test.');
       })
       .then((success) => {
-        productModels.product.find({})
+        web.product.find({})
           .populate('owner')
           .lean()
           .exec()
@@ -221,12 +219,12 @@ exports.add_product_post = [
       })
       .then((success) => {
         let productCount, existing, productId;
-        accountModels.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
+        web.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
           .then(function(user) {
             if (!user) {
               return Promise.reject(null);
             } else {
-              return productModels.product.countDocuments({ owner: req.session.loggedInAsId }).exec()
+              return web.product.countDocuments({ owner: req.session.loggedInAsId }).exec()
             }
           })
           .then(function(count) {
@@ -235,7 +233,7 @@ exports.add_product_post = [
             } else {
               productCount = 0;
             }
-            return productModels.product.findOne({ 
+            return web.product.findOne({ 
               category: data.category, 
               title: data.title, 
               owner: req.session.loggedInAsId 
@@ -243,7 +241,7 @@ exports.add_product_post = [
           })
           .then(function(product) {
             existing = product;
-            return accountModels.userLevel.findOne({ user: req.session.loggedInAsId }).exec();
+            return web.userLevel.findOne({ user: req.session.loggedInAsId }).exec();
           })
           .then(function(user) {
             if ((!existing && ((productCount + 1) > user.maxProducts)) || 
@@ -323,7 +321,7 @@ exports.add_product_post = [
               if (data.inventory) {
                 INVENTORY_AMOUNT = data.inventory;
               }
-              existing = new productModels.product({
+              existing = new web.product({
                 id: productId,
                 category: data.category,
                 title: data.title,
@@ -447,12 +445,12 @@ exports.delete_product_post = [
         return Promise.reject('Failed reCAPTCHA test.');
       })
       .then((success) => {
-        accountModels.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
+        web.user.findOne({ username: req.session.loggedInAs, admin: true }).exec()
           .then(function(user) {
             if (!user) {
               return Promise.reject(null);
             } else {
-              return productModels.product.findOneAndDelete({ 
+              return web.product.findOneAndDelete({ 
                 owner: req.session.loggedInAsId, 
                 title: data.product, 
                 category: data.category,
@@ -608,7 +606,7 @@ exports.create_invoice_post = [
           id = data.invoiceId;
         }
         if (data.cart) {
-          accountModels.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
+          web.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
           .then(function(doc) {
             if (!doc) {
               if (data.customerId) {
@@ -631,7 +629,7 @@ exports.create_invoice_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(productModels.product.findOne({ id: item.id }).exec());
+              items.push(web.product.findOne({ id: item.id }).exec());
               quantities.push(item.quantity);
               if (item.shippable) {
                 shippable = true;
@@ -826,7 +824,7 @@ exports.shipping_cost_post = [
           id = data.invoiceId;
         }
         if (data.cart) {
-          accountModels.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
+          web.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
           .then(function(doc) {
             if (!doc) {
               if (data.customerId) {
@@ -862,7 +860,7 @@ exports.shipping_cost_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(productModels.product.findOne({ id: item.id }).exec());
+              items.push(web.product.findOne({ id: item.id }).exec());
               quantities.push(parseInt(item.quantity, 10));
               if (item.shippable) {
                 shippable = true;
@@ -1173,7 +1171,7 @@ exports.get_tax_post = [
           id = data.invoiceId;
         }
         if (data.cart) {
-          accountModels.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
+          web.user.findOne({ username: req.session.loggedInAs }, 'customerId').exec()
           .then(function(doc) {
             if (!doc) {
               if (data.customerId) {
@@ -1209,7 +1207,7 @@ exports.get_tax_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(productModels.product.findOne({ id: item.id }).exec());
+              items.push(web.product.findOne({ id: item.id }).exec());
               quantities.push(item.quantity);
             }
             Promise.all(items)
@@ -1536,20 +1534,20 @@ exports.log_payment_post = [
         let quantities = [];
         let orderDoc;
         for (item of data.cart) {
-          items.push(productModels.product.findOne({ id: item.id }).exec());
+          items.push(web.product.findOne({ id: item.id }).exec());
           quantities.push(item.quantity);
         }
         Promise.all(items)
         .then(async function(values) {
           for (let i = 0; i < values.length; i++) {
-            let product = await productModels.product.findOne({ id: values[i].id }).exec();
+            let product = await web.product.findOne({ id: values[i].id }).exec();
             let newAmount = product.inventoryAmount;
             if (quantities[i] <= product.inventoryAmount) {
               newAmount = product.inventoryAmount - quantities[i];
             } else {
               return Promise.reject('Not enough inventory.');
             }
-            await productModels.product.findOneAndUpdate({ id: values[i].id }, { inventoryAmount: newAmount }).exec();
+            await web.product.findOneAndUpdate({ id: values[i].id }, { inventoryAmount: newAmount }).exec();
           }
           return Promise.resolve(null);
         })
@@ -1561,7 +1559,7 @@ exports.log_payment_post = [
               quantity: quantities[i],
             });
           }
-          let order = new productModels.order({
+          let order = new web.order({
             orderId: data.invoiceId,
             paymentId: data.intentId,
             customerId: data.customerId,
@@ -1593,7 +1591,7 @@ exports.log_payment_post = [
         })
         .then(function(doc) {
           if (req.session.loggedInAs && req.session.loggedInAsId) {
-            return accountModels.userLevel.findOne({ user: req.session.loggedInAsId }).exec();
+            return web.userLevel.findOne({ user: req.session.loggedInAsId }).exec();
           } else {
             return Promise.resolve(null);
           }

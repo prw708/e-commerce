@@ -51,6 +51,6 @@ var OrderSchema = new Schema({
 });
 
 module.exports = {
-  product: mongoose.model('Product', ProductSchema),
-  order: mongoose.model('Order', OrderSchema)
-}
+  product: ProductSchema,
+  order: OrderSchema
+};
