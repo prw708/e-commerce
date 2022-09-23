@@ -1,11 +1,11 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var ProductSchema = new Schema({
+let ProductSchema = new Schema({
   id: { type: String, required: true, index: true, unique: true },
   category: { type: String, required: true },
   title: { type: String, required: true, minlength: 1, maxlength: 50 },
-  image: { type: String, requirred: false, minlength: 0, maxlength: 1000000 },
+  image: { type: String, required: false, minlength: 0, maxlength: 1000000 },
   price: {
     type: Schema.Types.Decimal128, 
     set: v => { return new mongoose.Types.Decimal128.fromString(v.toFixed(2)); },
@@ -24,7 +24,7 @@ var ProductSchema = new Schema({
   },
 });
 
-var OrderSchema = new Schema({
+let OrderSchema = new Schema({
   orderId: { type: String },
   paymentId: { type: String },
   customerId: { type: String },

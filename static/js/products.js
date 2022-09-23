@@ -213,10 +213,10 @@ var app = Vue.createApp({
         if (!/^[A-Za-z0-9_]{1,50}$/.test(cart[i].id)) {
           return false;
         }
-        if (!/^[A-Za-z0-9 \-']{1,50}$/.test(cart[i].category)) {
+        if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(cart[i].category)) {
           return false;
         }
-        if (!/^[A-Za-z0-9 \-']{1,50}$/.test(cart[i].product)) {
+        if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(cart[i].product)) {
           return false;
         }
         if (!/^[0-9]{0,4}(\.[0-9]{1,2})?$/.test(cart[i].price)) {

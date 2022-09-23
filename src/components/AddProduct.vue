@@ -304,8 +304,8 @@ export default {
   },
   methods: {
     validTitle() {
-      if (!/^[A-Za-z0-9 \-']{1,50}$/.test(this.title) || /static/.test(this.title)) {
-        this.titleError = "Can contain A-Z, a-z, 0-9, spaces, ', and -.";
+      if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(this.title) || /static/.test(this.title)) {
+        this.titleError = "Can contain A-Z, a-z, 0-9, spaces, and .,?!'\"-.";
         return false;
       } else {
         this.titleError = "";
@@ -314,7 +314,7 @@ export default {
     },
     validImage() {
       if (this.image && !/^[A-Za-z0-9 \-'.,\\:]{1,100}$/.test(this.image)) {
-        this.imageError = "Can contain A-Z, a-z, 0-9, spaces, ', ., ,, and -.";
+        this.imageError = "Can contain A-Z, a-z, 0-9, spaces, and '.,-.";
         return false;
       } else {
         this.imageError = "";
@@ -331,8 +331,8 @@ export default {
       }
     },
     validCategory() {
-      if (!/^[A-Za-z0-9 \-']{1,50}$/.test(this.category) || /static/.test(this.category)) {
-        this.categoryError = "Can contain A-Z, a-z, 0-9, spaces, ', and -.";
+      if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(this.category) || /static/.test(this.category)) {
+        this.categoryError = "Can contain A-Z, a-z, 0-9, spaces, and .,?!'\"-.";
         return false;
       } else {
         this.categoryError = "";

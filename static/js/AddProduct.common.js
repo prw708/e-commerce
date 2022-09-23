@@ -2709,7 +2709,7 @@ var es_symbol_description = __webpack_require__("e01a");
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/pug-plain-loader!./node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/vue-loader-v16/dist??ref--1-1!./src/components/AddProduct.vue?vue&type=template&id=47e60e2c&lang=pug
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/pug-plain-loader!./node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/vue-loader-v16/dist??ref--1-1!./src/components/AddProduct.vue?vue&type=template&id=48214850&lang=pug
 
 
 
@@ -3123,7 +3123,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     disabled: !this.admin
   }, [$props.loading ? (Object(external_commonjs_vue_commonjs2_vue_root_Vue_["openBlock"])(), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementBlock"])("span", _hoisted_53)) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true), _hoisted_54], 8, _hoisted_52)])])) : (Object(external_commonjs_vue_commonjs2_vue_root_Vue_["openBlock"])(), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementBlock"])("div", _hoisted_55, _hoisted_57))])], 64);
 }
-// CONCATENATED MODULE: ./src/components/AddProduct.vue?vue&type=template&id=47e60e2c&lang=pug
+// CONCATENATED MODULE: ./src/components/AddProduct.vue?vue&type=template&id=48214850&lang=pug
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.exec.js
 var es_regexp_exec = __webpack_require__("ac1f");
@@ -3183,8 +3183,8 @@ var es_array_slice = __webpack_require__("fb6a");
   },
   methods: {
     validTitle: function validTitle() {
-      if (!/^[A-Za-z0-9 \-']{1,50}$/.test(this.title) || /static/.test(this.title)) {
-        this.titleError = "Can contain A-Z, a-z, 0-9, spaces, ', and -.";
+      if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(this.title) || /static/.test(this.title)) {
+        this.titleError = "Can contain A-Z, a-z, 0-9, spaces, and .,?!'\"-.";
         return false;
       } else {
         this.titleError = "";
@@ -3193,7 +3193,7 @@ var es_array_slice = __webpack_require__("fb6a");
     },
     validImage: function validImage() {
       if (this.image && !/^[A-Za-z0-9 \-'.,\\:]{1,100}$/.test(this.image)) {
-        this.imageError = "Can contain A-Z, a-z, 0-9, spaces, ', ., ,, and -.";
+        this.imageError = "Can contain A-Z, a-z, 0-9, spaces, and '.,-.";
         return false;
       } else {
         this.imageError = "";
@@ -3210,8 +3210,8 @@ var es_array_slice = __webpack_require__("fb6a");
       }
     },
     validCategory: function validCategory() {
-      if (!/^[A-Za-z0-9 \-']{1,50}$/.test(this.category) || /static/.test(this.category)) {
-        this.categoryError = "Can contain A-Z, a-z, 0-9, spaces, ', and -.";
+      if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(this.category) || /static/.test(this.category)) {
+        this.categoryError = "Can contain A-Z, a-z, 0-9, spaces, and .,?!'\"-.";
         return false;
       } else {
         this.categoryError = "";

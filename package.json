@@ -16,6 +16,7 @@
     "Confirmation": "vue-cli-service build --target lib --name Confirmation ./src/components/Confirmation.vue"
   },
   "dependencies": {
+    "big.js": "^6.2.1",
     "core-js": "^3.19.0",
     "vue": "^3.2.20",
     "vue-router": "^4.0.12"

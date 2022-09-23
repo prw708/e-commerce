@@ -121,22 +121,22 @@ exports.load_post = [
 
 exports.add_product_post = [
   upload.single('image'),
-  body('title', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('title', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('inventory', 'Format must be in XXXX.')
     .trim()
     .escape()
     .isInt({ min: 0, max: 9999, allow_leading_zeroes: false })
     .toInt()
     .optional({ checkFalsy: true }),
-  body('category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('price', 'Format must be in XXXX.XX.')
     .trim()
     .escape()
@@ -196,6 +196,8 @@ exports.add_product_post = [
       } else {
         res.redirect('/website/account/login');
       }
+    } else if (!req.session.admin) {
+      res.status(401).json('Your account does not have access to this content.');
     } else if (req.file && req.file.size > 1000000) {
       handleAddError(req.file.size, 'File is too large.');
     } else if (req.file && 
@@ -396,16 +398,16 @@ exports.add_product_confirm_get = function(req, res, next) {
 };
 
 exports.delete_product_post = [
-  body('product', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('product', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
-  body('category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
+  body('category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('owner', 'Can contain A-Z, a-z, 0-9, and -.')
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -431,6 +433,8 @@ exports.delete_product_post = [
       } else {
         res.redirect('/website/account/login');
       }
+    } else if (!req.session.admin) {
+      res.status(401).json('Your account does not have access to this content.');
     } else if (errors.isEmpty()) {
       const url = 'https://www.google.com/recaptcha/api/siteverify';
       const requestData = 'secret=' + encodeURIComponent(process.env.RECAPTCHA_SECRET_KEY) + '&' +
@@ -541,16 +545,16 @@ exports.create_invoice_post = [
     .matches(/^[A-Za-z0-9_]{1,50}$/)
     .whitelist('A-Za-z0-9_')
     .escape(),
-  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
-  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
+  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('cart.*.price', 'Format must be in XXXX.XX.')
     .trim()
     .escape()
@@ -759,16 +763,16 @@ exports.shipping_cost_post = [
     .matches(/^[A-Za-z0-9_]{1,50}$/)
     .whitelist('A-Za-z0-9_')
     .escape(),
-  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
-  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
+  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('cart.*.price', 'Format must be in XXXX.XX.')
     .trim()
     .escape()
@@ -1107,16 +1111,16 @@ exports.get_tax_post = [
     .matches(/^[A-Za-z0-9_]{1,50}$/)
     .whitelist('A-Za-z0-9_')
     .escape(),
-  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
-  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
+  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('cart.*.price', 'Format must be in XXXX.XX.')
     .trim()
     .escape()
@@ -1414,16 +1418,16 @@ exports.log_payment_post = [
     .matches(/^[A-Za-z0-9_]{1,50}$/)
     .whitelist('A-Za-z0-9_')
     .escape(),
-  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('cart.*.product', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
-  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
+  body('cart.*.category', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
     .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-']{1,50}$/)
-    .whitelist('A-Za-z0-9 \\-\''),
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('cart.*.price', 'Format must be in XXXX.XX.')
     .trim()
     .escape()
@@ -1489,11 +1493,10 @@ exports.log_payment_post = [
     .matches(/^[A-Za-z0-9 \-']{1,100}$/)
     .whitelist('A-Za-z0-9 \\-\'')
     .optional({ checkFalsy: true }),
-  body('shippingAddress.postalCode', 'Can contain A-Z, a-z, 0-9, spaces, \', and -.')
+  body('shippingAddress.postalCode', 'Invalid postal code.')
     .trim()
-    .isLength({ min: 1, max: 100 })
-    .matches(/^[A-Za-z0-9 \-']{1,100}$/)
-    .whitelist('A-Za-z0-9 \\-\'')
+    .escape()
+    .isPostalCode('any')
     .optional({ checkFalsy: true }),
   body('shippingAddress.country', 'Must be a valid ISO 3166-1 alpha-2 country code.')
     .trim()

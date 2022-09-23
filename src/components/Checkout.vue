@@ -209,7 +209,7 @@ div(class="row g-0")
 </template>
 
 <script>
-import Big from '../big.js';
+import Big from 'big.js';
 
 export default {
   components: {

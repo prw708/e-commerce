@@ -101,7 +101,7 @@ div(
 </template>
 
 <script>
-import Big from '../big.js';
+import Big from 'big.js';
 
 export default {
   props: [
@@ -149,22 +149,22 @@ export default {
           var path = '';
           if (pathComponents[i] === 'category') {
             if (pathComponents[i + 1]) {
-              title = this.capitalize(pathComponents[i + 1]);
+              title = this.capitalize(decodeURIComponent(pathComponents[i + 1]));
               path = prev.path + pathComponents[i] + '/' + pathComponents[i + 1] + '/';
             } else {
-              title = this.capitalize(pathComponents[i]);
+              title = this.capitalize(decodeURIComponent(pathComponents[i]));
               path = prev.path + pathComponents[i] + '/';
             }
           } else if (pathComponents[i] === 'product') {
             if (pathComponents[i + 1]) {
-              title = this.capitalize(pathComponents[i + 1]);
+              title = this.capitalize(decodeURIComponent(pathComponents[i + 1]));
               path = prev.path + pathComponents[i] + '/' + pathComponents[i + 1] + '/';
             } else {
-              title = this.capitalize(pathComponents[i]);
+              title = this.capitalize(decodeURIComponent(pathComponents[i]));
               path = prev.path + pathComponents[i] + '/';
             }
           } else if (pathComponents[i - 1] !== 'category' && pathComponents[i - 1] !== 'product') {
-            title = this.capitalize(pathComponents[i]);
+            title = this.capitalize(decodeURIComponent(pathComponents[i]));
             path = prev.path + pathComponents[i] + '/';
           }
           urlComponents.push(prev);
@@ -186,7 +186,10 @@ export default {
       for (var i = 0; i < string.length; i++) {
         if (i == 0) {
           newString += string.charAt(i).toUpperCase();
-        } else if (i > 0 && (string.charAt(i - 1) === '-' || string.charAt(i - 1) === ' ')) {
+        } else if (i > 0 && 
+          (string.charAt(i - 1) === '-' || string.charAt(i - 1) === ' ' || 
+           string.charAt(i - 1) === '\'' || string.charAt(i - 1) === '"')
+        ) {
           newString += string.charAt(i).toUpperCase();
         } else {
           newString += string.charAt(i);
