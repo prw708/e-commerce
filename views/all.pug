@@ -11,6 +11,7 @@ block append scripts
       src=`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`
     )
   script(type="text/javascript" src="https://js.stripe.com/v3")
+  script(type="text/javascript" src="/projects/e-commerce/static/js/dompurify.bundle.js")
   script(type="text/javascript" src="/projects/e-commerce/static/js/ecommerce-main.bundle.js")
 
 block content
@@ -30,6 +31,4 @@ block content
     data-username=loggedInAs
     data-admin=admin
   )
-  script(type="text/javascript" src="/projects/e-commerce/static/js/big.js.bundle.js")
-  script(type="text/javascript" src="/projects/e-commerce/static/js/runtime.bundle.js")
   script(type="text/javascript" src="/projects/e-commerce/static/js/ecommerce-products.bundle.js")
