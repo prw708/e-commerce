@@ -50,7 +50,7 @@ div(class="container-fluid px-4")
         type="text"
         id="pTitle"
         :class="(titleError) ? 'form-control is-invalid' : 'form-control'"
-        maxlength="50"
+        maxlength="100"
         autocomplete="off"
         v-model="this.title"
         @focus="handleTitleFocus"
@@ -233,7 +233,7 @@ div(class="container-fluid px-4")
         |  Add Product
   div(
     v-else
-    class="alert alert-danger px-4 mb-4"
+    class="alert alert-danger px-4 mb-5"
   )
     p(class="mb-0") You must have sufficient privileges.
 </template>
@@ -304,7 +304,7 @@ export default {
   },
   methods: {
     validTitle() {
-      if (!/^[A-Za-z0-9 \-'".,?!]{1,50}$/.test(this.title) || /static/.test(this.title)) {
+      if (!/^[A-Za-z0-9 \-'".,?!]{1,100}$/.test(this.title) || /static/.test(this.title)) {
         this.titleError = "Can contain A-Z, a-z, 0-9, spaces, and .,?!'\"-.";
         return false;
       } else {

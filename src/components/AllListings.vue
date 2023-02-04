@@ -19,7 +19,7 @@ template(v-if="!loading && listings && listings.length > 0")
       :to="{ name: 'checkout' }"
     ) Proceed to Checkout
 div(v-else-if="!loading")
-  p(class="p-4 mb-0") There are no items available.
+  p(class="px-4 my-5") There are no items available.
 </template>
 
 <script>

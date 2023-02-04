@@ -40,18 +40,28 @@ const routes = [
     name: 'home', 
     component: AllListings, 
     props: { categories: categories, listings: listings },
+    meta: { title: 'All Products' },
   },
   { 
     path: '/add', 
     name: 'add', 
     component: AddProduct, 
     props: { categories: categories },
+    meta: { title: 'Add Product' },
+  },
+  { 
+    path: '/orders', 
+    name: 'orders', 
+    component: Orders, 
+    props: false,
+    meta: { title: 'Orders' },
   },
   { 
     path: '/checkout', 
     name: 'checkout', 
     component: Checkout, 
     props: false,
+    meta: { title: 'Checkout' },
   },
   { 
     path: '/category/:category', 
@@ -112,6 +122,7 @@ const routes = [
     name: 'notfound', 
     component: NotFound,
     props: false,
+    meta: { title: 'Not Found' },
   },
 ];
 

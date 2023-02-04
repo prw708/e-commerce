@@ -9,6 +9,8 @@ router.post('/add', Products_Controller.add_product_post);
 router.get('/add/confirm', Products_Controller.add_product_confirm_get);
 router.post('/delete', Products_Controller.delete_product_post);
 router.get('/delete/confirm', Products_Controller.delete_product_confirm_get);
+router.post('/load-orders', Products_Controller.load_orders_post);
+router.post('/mark-order', Products_Controller.mark_order_post);
 
 router.post('/create-invoice', Products_Controller.create_invoice_post);
 router.post('/create-payment-intent', Products_Controller.create_payment_intent_post);

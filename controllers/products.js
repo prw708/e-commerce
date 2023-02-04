@@ -16,6 +16,7 @@ Big.DP = 2;
 Big.RM = Big.roundHalfUp;
 
 const web = require('../../dbWeb.js');
+const shop = require('../../dbShop.js');
 
 const BASEPATH = '/projects/e-commerce';
 
@@ -43,6 +44,241 @@ exports.home_get = function(req, res, next) {
   }
 };
 
+exports.mark_order_post = [
+  body('orderId', 'Invalid order ID.')
+    .trim()
+    .escape()
+    .matches(/^[A-Za-z0-9_]+$/),
+  body('time', 'Invalid value.')
+    .trim()
+    .escape()
+    .isNumeric({ no_symbols: true })
+    .isInt()
+    .toInt(10),
+  body('g-recaptcha-response', 'Failed reCAPTCHA test.')
+    .trim()
+    .escape()
+    .matches(/^[A-Za-z0-9_\-]+$/),
+  function(req, res, next) {
+    let data = matchedData(req, { includeOptionals: true, onlyValidData: true, locations: ['body'] });
+    let errors = validationResult(req);
+    let pastTime = utils.pastTimeFrame(data.time, 2);
+    if (!req.session.loggedInAs || !req.session.loggedInAsId) {
+      if (req.xhr) {
+        res.status(401).json('Not logged in.');
+      } else {
+        res.redirect('/website/account/login');
+      }
+    } else if (!req.session.admin) {
+      res.status(401).json('Your account does not have access to this content.');
+    } else if (errors.isEmpty()) {
+      const url = 'https://www.google.com/recaptcha/api/siteverify';
+      const requestData = 'secret=' + encodeURIComponent(process.env.RECAPTCHA_SECRET_KEY) + '&' +
+                          'response=' + encodeURIComponent(data['g-recaptcha-response']);
+      utils.postJSON(url, {}, requestData, (parsedJSON) => {
+        if (parsedJSON.success === true &&
+            parsedJSON.score >= 0.7 &&
+            parsedJSON.action === 'markCompleted' &&
+            parsedJSON.hostname === req.hostname) {
+          return true;
+        }
+        return Promise.reject('Failed reCAPTCHA test.');
+      })
+      .then((success) => {
+        shop.order.findOne({ orderId: data.orderId }).exec()
+          .then(function(order) {
+            if (!order) {
+              return Promise.reject(null);
+            } else {
+              order.completed = !order.completed;
+              return order.save();
+            }
+          })
+          .then(function(doc) {
+            if (req.xhr) {
+              res.status(200).json(doc);
+            } else {
+              res.render('../e-commerce/views/confirm', {
+                title: 'Mark Order',
+                error: 'Order marked successfully!',
+                back: 2
+              });
+            }
+          })
+          .catch((err) => handleMarkingError(err, 'An error occurred while marking the order. Please try again later.'));
+      })
+      .catch(err => handleMarkingError(err, 'Failed reCAPTCHA test.'));
+    } else {
+      if (!pastTime) {
+        handleMarkingError(data.time, 'An error occurred while marking the order. Please try again later.');
+      } else {
+        if (req.xhr) {
+          res.status(400).json('Marking failed.');
+        } else {
+          res.render('../e-commerce/views/confirm', {
+            title: 'Mark Order',
+            error: 'An error occurred while marking the order. Please try again later.',
+            back: 2
+          });
+        }
+      }
+    }
+    function handleMarkingError(err, msg) {
+      if (err) {
+        winston.logger.error(err);
+      }
+      if (req.xhr) {
+        res.status(400).json(msg);
+      } else {
+        res.render('../e-commerce/views/confirm', {
+          title: 'Mark Order',
+          error: 'An error occurred while marking the order. Please try again later.',
+          back: 2
+        });
+      }
+    }
+  }
+];
+
+exports.load_orders_post = [
+  body('p', 'Invalid value.')
+    .trim()
+    .escape()
+    .isNumeric({ no_symbols: true })
+    .isInt({ min: 1 })
+    .toInt(),
+  body('searchText', 'Invalid search text.')
+    .trim()
+    .escape()
+    .matches(/^[A-Za-z0-9_]{1,200}$/)
+    .whitelist('A-Za-z0-9_')
+    .optional({ checkFalsy: true }),
+  body('g-recaptcha-response', 'Failed reCAPTCHA test.')
+    .trim()
+    .escape()
+    .matches(/^[A-Za-z0-9_\-]+$/),
+  function(req, res, next) {
+    let data = matchedData(req, { includeOptionals: true, onlyValidData: true, locations: ['body'] });
+    let errors = validationResult(req);
+    if (!req.session.loggedInAs || !req.session.loggedInAsId) {
+      if (req.xhr) {
+        res.status(401).json('Not logged in.');
+      } else {
+        res.redirect('/website/account/login');
+      }
+    } else if (!req.session.admin) {
+      res.status(401).json('Your account does not have access to this content.');
+    } else if (errors.isEmpty()) {
+      const url = 'https://www.google.com/recaptcha/api/siteverify';
+      const requestData = 'secret=' + encodeURIComponent(process.env.RECAPTCHA_SECRET_KEY) + '&' +
+                          'response=' + encodeURIComponent(data['g-recaptcha-response']);
+      utils.postJSON(url, {}, requestData, (parsedJSON) => {
+        if (parsedJSON.success === true &&
+            parsedJSON.score >= 0.7 &&
+            parsedJSON.action === 'loadOrders' &&
+            parsedJSON.hostname === req.hostname) {
+          return true;
+        }
+        return Promise.reject('Failed reCAPTCHA test.');
+      })
+      .then((success) => {
+        let page = 0, pageSize = 10, viewable = 2, pages, start, end;
+        page = (data.p) ? data.p - 1: 0;
+        let searchParameters = (data.searchText) ? { orderId: new RegExp(data.searchText, 'i') } : {};
+        shop.order.find(searchParameters).countDocuments().exec()
+          .then(function(documents) {
+            pages = new Array(Math.ceil(documents / pageSize));
+            pages = pages.fill(1);
+            pages = pages.map((curr, index) => { return index + 1; });
+            if (pages[pages.length - 1] - pages[page] < viewable) {
+              end = (pages[pages.length - 1] - pages[page]) + pages[page];
+            } else {
+              end = pages[page] + viewable;
+            }
+            if (pages[page] - pages[0] < viewable) {
+              start = pages[page] - (pages[page] - pages[0]);
+            } else {
+              start = pages[page] - viewable;
+            }
+            pages = pages.slice((start - 1), end);
+            return shop.order.find(searchParameters)
+              .collation({ locale: 'en' })
+              .sort({ created: 'desc' })
+              .skip(page * pageSize)
+              .limit(pageSize)
+              .lean()
+              .exec();
+          })
+          .then(function(orders) {
+            if (req.xhr) {
+              for (order of orders) {
+                let formattedCreated = utils.getDateTime(req.signedCookies.TD, order.created);
+                if (formattedCreated.timeZoneName) {
+                  order.created = formattedCreated.dateString + ' ' +
+                                  formattedCreated.timeString + ' (' + 
+                                  formattedCreated.timeZoneName + ')';
+                } else {
+                  order.created = formattedCreated.dateString + ' ' + formattedCreated.timeString;
+                }
+                for (item of order.order) {
+                  item.price = item.price.toString();
+                }
+                order.total = order.total.toString();
+                order.shippingCost = order.shippingCost.toString();
+                order.tax = order.tax.toString();
+              }
+              let pagination = {
+                pages: pages,
+                currentPage: page + 1,
+                startPage: start,
+                endPage: end,
+              };
+              let combined = Object.assign({ pagination: pagination }, { orders: orders });
+              res.status(200).json(combined);
+            } else {
+              res.render('../e-commerce/views/confirm', {
+                title: 'Load Orders',
+                error: 'Orders loaded successfully!',
+                back: 2
+              });
+            }
+          })
+          .catch(err => handleLoadError(err, 'Orders not found.'));
+      })
+      .catch(err => handleLoadError(err, 'Failed reCAPTCHA test.'));
+    } else {
+      if (req.xhr) {
+        res.status(400).json(errors.array({ onlyFirstError: true }));
+      } else {
+        res.render('../e-commerce/views/confirm', {
+          title: 'Load Orders',
+          error: 'An error occurred while loading the orders. Please try again later.',
+          back: 2
+        });
+      }
+    }
+    function handleLoadError(err, msg) {
+      errors = errors.array({ onlyFirstError: true });
+      errors.push({
+        param: 'loadOrders',
+        msg: msg
+      });
+      if (err) {
+        winston.logger.error(err);
+      }
+      if (req.xhr) {
+        res.status(400).json(errors);
+      } else {
+        res.render('../e-commerce/views/confirm', {
+          title: 'Load Orders',
+          error: 'An error occurred while loading the orders. Please try again later.',
+          back: 2
+        });
+      }
+    }
+  }
+];
+
 exports.load_post = [
   body('g-recaptcha-response', 'Failed reCAPTCHA test.')
     .trim()
@@ -65,7 +301,7 @@ exports.load_post = [
         return Promise.reject('Failed reCAPTCHA test.');
       })
       .then((success) => {
-        web.product.find({})
+        shop.product.find({})
           .populate('owner')
           .lean()
           .exec()
@@ -123,8 +359,8 @@ exports.add_product_post = [
   upload.single('image'),
   body('title', 'Can contain A-Z, a-z, 0-9, spaces, and .,?!\'"-.')
     .trim()
-    .isLength({ min: 1, max: 50 })
-    .matches(/^[A-Za-z0-9 \-'".,?!]{1,50}$/)
+    .isLength({ min: 1, max: 100 })
+    .matches(/^[A-Za-z0-9 \-'".,?!]{1,100}$/)
     .whitelist('A-Za-z0-9 \\-\'".,?!'),
   body('inventory', 'Format must be in XXXX.')
     .trim()
@@ -226,7 +462,7 @@ exports.add_product_post = [
             if (!user) {
               return Promise.reject(null);
             } else {
-              return web.product.countDocuments({ owner: req.session.loggedInAsId }).exec()
+              return shop.product.countDocuments({ owner: req.session.loggedInAsId }).exec()
             }
           })
           .then(function(count) {
@@ -235,7 +471,7 @@ exports.add_product_post = [
             } else {
               productCount = 0;
             }
-            return web.product.findOne({ 
+            return shop.product.findOne({ 
               category: data.category, 
               title: data.title, 
               owner: req.session.loggedInAsId 
@@ -323,7 +559,7 @@ exports.add_product_post = [
               if (data.inventory) {
                 INVENTORY_AMOUNT = data.inventory;
               }
-              existing = new web.product({
+              existing = new shop.product({
                 id: productId,
                 category: data.category,
                 title: data.title,
@@ -454,7 +690,7 @@ exports.delete_product_post = [
             if (!user) {
               return Promise.reject(null);
             } else {
-              return web.product.findOneAndDelete({ 
+              return shop.product.findOneAndDelete({ 
                 owner: req.session.loggedInAsId, 
                 title: data.product, 
                 category: data.category,
@@ -559,7 +795,8 @@ exports.create_invoice_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' })
+    .toFloat(),
   body('cart.*.quantity', 'Must be a positive integer.')
     .trim()
     .escape()
@@ -633,7 +870,7 @@ exports.create_invoice_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(web.product.findOne({ id: item.id }).exec());
+              items.push(shop.product.findOne({ id: item.id }).exec());
               quantities.push(item.quantity);
               if (item.shippable) {
                 shippable = true;
@@ -777,7 +1014,8 @@ exports.shipping_cost_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' })
+    .toFloat(),
   body('cart.*.quantity', 'Must be a positive integer.')
     .trim()
     .escape()
@@ -864,7 +1102,7 @@ exports.shipping_cost_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(web.product.findOne({ id: item.id }).exec());
+              items.push(shop.product.findOne({ id: item.id }).exec());
               quantities.push(parseInt(item.quantity, 10));
               if (item.shippable) {
                 shippable = true;
@@ -1104,7 +1342,8 @@ exports.get_tax_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' })
+    .toFloat(),
   body('cart.*.id', 'Invalid ID.')
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -1125,7 +1364,8 @@ exports.get_tax_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' })
+    .toFloat(),
   body('cart.*.quantity', 'Must be a positive integer.')
     .trim()
     .escape()
@@ -1211,7 +1451,7 @@ exports.get_tax_post = [
           })
           .then(function(doc) {
             for (item of data.cart) {
-              items.push(web.product.findOne({ id: item.id }).exec());
+              items.push(shop.product.findOne({ id: item.id }).exec());
               quantities.push(item.quantity);
             }
             Promise.all(items)
@@ -1319,7 +1559,8 @@ exports.create_payment_intent_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' })
+    .toFloat(),
   body('g-recaptcha-response', 'Failed reCAPTCHA test.')
     .trim()
     .escape()
@@ -1357,7 +1598,7 @@ exports.create_payment_intent_post = [
       .catch(err => handleIntentError(err, 'Failed reCAPTCHA test.'));
     } else {
       if (req.xhr) {
-        res.status(400).json('Payment tntent creation failed.');
+        res.status(400).json('Payment intent creation failed.');
       } else {
         res.render('../e-commerce/views/confirm', {
           title: 'Checkout',
@@ -1432,7 +1673,8 @@ exports.log_payment_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 9999.99, locale: 'en-US' })
+    .toFloat(),
   body('cart.*.quantity', 'Must be a positive integer.')
     .trim()
     .escape()
@@ -1447,17 +1689,20 @@ exports.log_payment_post = [
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' })
+    .toFloat(),
   body('shippingCost', 'Format must be in XXXXX.XX.')
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' })
+    .toFloat(),
   body('tax', 'Format must be in XXXXX.XX.')
     .trim()
     .escape()
     .isCurrency({ allow_negatives: false, digits_after_decimal: [0, 1, 2] })
-    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' }),
+    .isFloat({ min: 0, max: 99999.99, locale: 'en-US' })
+    .toFloat(),
   body('shippingAddress.email', 'Must be a valid email.')
     .trim()
     .isLength({ min: 1, max: 101 })
@@ -1537,32 +1782,45 @@ exports.log_payment_post = [
         let quantities = [];
         let orderDoc;
         for (item of data.cart) {
-          items.push(web.product.findOne({ id: item.id }).exec());
+          items.push(shop.product.findOne({ id: item.id }).exec());
           quantities.push(item.quantity);
         }
         Promise.all(items)
         .then(async function(values) {
+          let product = null;
+          let newAmount = 0;
           for (let i = 0; i < values.length; i++) {
-            let product = await web.product.findOne({ id: values[i].id }).exec();
-            let newAmount = product.inventoryAmount;
+            product = await shop.product.findOne({ id: values[i].id }).exec();
+            newAmount = product.inventoryAmount;
             if (quantities[i] <= product.inventoryAmount) {
               newAmount = product.inventoryAmount - quantities[i];
             } else {
               return Promise.reject('Not enough inventory.');
             }
-            await web.product.findOneAndUpdate({ id: values[i].id }, { inventoryAmount: newAmount }).exec();
           }
-          return Promise.resolve(null);
+          for (let i = 0; i < values.length; i++) {
+            product = await shop.product.findOne({ id: values[i].id }).exec();
+            newAmount = product.inventoryAmount;
+            if (quantities[i] <= product.inventoryAmount) {
+              newAmount = product.inventoryAmount - quantities[i];
+            } else {
+              return Promise.reject('Not enough inventory.');
+            }
+            await shop.product.findOneAndUpdate({ id: values[i].id }, { inventoryAmount: newAmount }).exec();
+          }
+          return Promise.resolve(values);
         })
-        .then(function(doc) {
+        .then(function(values) {
           let fullOrder = [];
-          for (let i = 0; i < items.length; i++) {
+          for (let i = 0; i < values.length; i++) {
             fullOrder.push({
-              product: items[i]._id,
+              title: values[i].title,
+              price: new Big(values[i].price.toString()),
               quantity: quantities[i],
             });
           }
-          let order = new web.order({
+          let order = new shop.order({
+            created: Date.now(),
             orderId: data.invoiceId,
             paymentId: data.intentId,
             customerId: data.customerId,
@@ -1573,6 +1831,7 @@ exports.log_payment_post = [
             cardPostalCode: data.cardPostalCode,
             cardCountry: data.cardCountry,
             shippingAddress: data.shippingAddress,
+            completed: false,
           });
           return order.save();
         })

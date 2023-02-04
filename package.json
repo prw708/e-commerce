@@ -9,6 +9,7 @@
     "b2": "vue-cli-service build --target lib --name ECommerce ./src/App.vue",
     "AllListings": "vue-cli-service build --target lib --name AllListings ./src/components/AllListings.vue",
     "AddProduct": "vue-cli-service build --target lib --name AddProduct ./src/components/AddProduct.vue",
+    "Orders": "vue-cli-service build --target lib --name Orders ./src/components/Orders.vue",
     "Category": "vue-cli-service build --target lib --name Category ./src/components/Category.vue",
     "Product": "vue-cli-service build --target lib --name Product ./src/components/Product.vue",
     "NotFound": "vue-cli-service build --target lib --name NotFound ./src/components/NotFound.vue",
@@ -19,16 +20,17 @@
     "big.js": "^6.2.1",
     "core-js": "^3.19.0",
     "vue": "^3.2.20",
-    "vue-router": "^4.0.12"
+    "vue-router": "^4.0.12",
+    "webpack": "^5.75.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.5.15",
-    "@vue/cli-plugin-eslint": "^4.5.15",
-    "@vue/cli-plugin-router": "^4.5.15",
-    "@vue/cli-service": "^4.5.15",
+    "@babel/eslint-parser": "^7.19.1",
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-plugin-router": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
     "@vue/compiler-sfc": "^3.2.20",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
+    "eslint": "^8.32.0",
     "eslint-plugin-vue": "^7.20.0",
     "pug": "^3.0.2",
     "pug-plain-loader": "^1.1.0"
@@ -43,7 +45,7 @@
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser"
     },
     "rules": {
       "no-extra-semi": "off",

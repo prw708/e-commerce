@@ -16,6 +16,13 @@ nav(class="navbar navbar-light bg-light border-top border-bottom py-1")
     div(class="col-12 col-sm-4 pb-3 pb-sm-0 text-sm-end")
       router-link(
         v-if="this.admin"
+        :to="{ name: 'orders' }"
+        class="btn border p-0 me-2"
+        title="View Orders"
+      )
+        span(class="receipt-icon")
+      router-link(
+        v-if="this.admin"
         :to="{ name: 'add' }"
         class="btn border p-0 me-2"
         title="Add a Product"

@@ -3,6 +3,7 @@ import * as VueRouter from 'vue-router';
 import ECommerce from './ECommerce.common';
 import AllListings from './AllListings.common';
 import AddProduct from './AddProduct.common';
+import Orders from './Orders.common';
 import Category from './Category.common';
 import Product from './Product.common';
 import Checkout from './Checkout.common';
@@ -46,30 +47,54 @@ var routes = [
     name: 'home', 
     component: AllListings, 
     props: { categories: categories, listings: listings },
+    meta: { 
+      title: (to) => 'All Products'
+    },
   },
   { 
     path: '/add', 
     name: 'add', 
     component: AddProduct, 
     props: { categories: categories, listings: listings },
+    meta: { 
+      title: (to) => 'Add Product'
+    },
+  },
+  { 
+    path: '/orders', 
+    name: 'orders', 
+    component: Orders, 
+    props: false,
+    meta: { 
+      title: (to) => 'Orders'
+    },
   },
   { 
     path: '/checkout', 
     name: 'checkout', 
     component: Checkout, 
     props: false,
+    meta: { 
+      title: (to) => 'Checkout'
+    },
   },
   { 
     path: '/confirmation', 
     name: 'confirmation', 
     component: Confirmation, 
     props: false,
+    meta: { 
+      title: (to) => 'Confirmation'
+    },
   },
   { 
     path: '/category/:category', 
     name: 'category', 
     component: Category,
     props: categoryProps,
+    meta: { 
+      title: (to) => to.params.category
+    },
     beforeEnter: (to) => {
       var existingCategory = false;
       for (var i = 0; i < categories.length; i++) {
@@ -93,6 +118,9 @@ var routes = [
     name: 'product', 
     component: Product,
     props: productProps,
+    meta: { 
+      title: (to) => to.params.product
+    },
     beforeEnter: (to) => {
       var existingCategory = false, existingProduct = false;
       var categoryIndex = 0;
@@ -126,6 +154,9 @@ var routes = [
     name: 'notfound', 
     component: NotFound,
     props: false,
+    meta: { 
+      title: (to) => 'Not Found'
+    },
   },
 ];
 
@@ -137,9 +168,26 @@ var router = VueRouter.createRouter({
   routes,
 });
 
+router.beforeEach((to, from, next) => {
+  let title = to.meta.title(to);
+  title = title.replace('-', ' ');
+  let titleComponents = title.split(' ');
+  titleComponents = titleComponents.map(x => {
+    if (x.length > 1) {
+      return x.substring(0, 1).toUpperCase() + x.substring(1)
+    } else {
+      return x.toUpperCase();
+    }
+  });
+  document.title = titleComponents.join(' ') + ' - Penguin Web Studio';
+  next();
+});
+
 var app = Vue.createApp({
   render() {
     return Vue.h(ECommerce, { 
+      onMarkCompleted: this.MarkCompleted, 
+      onGetOrders: this.GetOrders, 
       onSendData: this.SendData, 
       onDeleteProduct: this.DeleteProduct,
       onCheckout: this.Checkout,
@@ -152,6 +200,8 @@ var app = Vue.createApp({
       costs: this.costs,
       stripeKey: this.stripeKey,
       errors: this.errors,
+      orders: this.orders,
+      pagination: this.pagination,
       callSuccess: this.success, 
       callError: this.error,
     }, null);
@@ -161,6 +211,8 @@ var app = Vue.createApp({
       username: '',
       admin: false,
       loading: false,
+      orders: null,
+      pagination: null,
       success: '',
       error: '',
       stripeKey: { 
@@ -675,6 +727,73 @@ var app = Vue.createApp({
         }
       }
     },
+    MarkCompleted(val) {
+      this.success = '';
+      this.error = '';
+      let data = {};
+      if (val) {
+        data.orderId = DOMPurify.sanitize(val);
+        data.time = DOMPurify.sanitize(getTime());
+      } else {
+        data = {};
+      }
+      var context = this;
+      var httpRequest = new XMLHttpRequest();
+      if (!httpRequest) {
+        return null;
+      }
+      grecaptcha.ready(function() {
+        grecaptcha.execute(DOMPurify.sanitize(getRecaptchaSiteKey()), { action: 'markCompleted' })
+        .then(function(recaptchaToken) {
+          data['g-recaptcha-response'] = DOMPurify.sanitize(recaptchaToken);
+          httpRequest.open('POST', '/projects/e-commerce/mark-order', true);
+          httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+          httpRequest.setRequestHeader('CSRF-Token', DOMPurify.sanitize(getCSRF()));
+          httpRequest.send(JSON.stringify(data));
+        });
+      });
+      httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+          if (httpRequest.status === 200) {
+            context.loading = false;
+            context.success = '';
+            context.error = '';
+          } else {
+            context.loading = false;
+            context.success = '';
+            context.error = JSON.parse(DOMPurify.sanitize(httpRequest.responseText));
+          }
+        }
+      }
+    },
+    GetOrders(val) {
+      var context = this;
+      this.loading = true;
+      if (!this.admin) {
+        return false;
+      }
+      LoadOrders(val.page, val.searchText)
+        .then(function(doc) {
+          context.orders = doc.orders;
+          context.pagination = doc.pagination;
+          context.errors = [];
+          return true;
+        }, function(doc) {
+          context.orders = null;
+          context.pagination = {
+            pages: 1,
+            currentPage: 1,
+            startPage: 1,
+            endPage: 1,
+          };
+          context.errors = doc;
+          return false;
+        })
+        .then(function(doc) {
+          context.loading = false;
+        });
+    },
     SendData(data) {
       this.success = '';
       this.error = '';
@@ -763,6 +882,45 @@ var app = Vue.createApp({
   },
 });
 
+function LoadOrders(page, searchText) {
+  return new Promise(function(resolve, reject) {
+    var data;
+    if (page && searchText) {
+      data = { p: page, searchText: searchText };
+    } else if (page && !searchText) {
+      data = { p: page, searchText: '' };
+    } else {
+      data = { p: 1, searchText: '' };
+    }
+    var httpRequest = new XMLHttpRequest();
+    if (!httpRequest) {
+      return null;
+    }
+    grecaptcha.ready(function() {
+      grecaptcha.execute(DOMPurify.sanitize(getRecaptchaSiteKey()), { action: 'loadOrders' })
+      .then(function(recaptchaToken) {
+        data['g-recaptcha-response'] = DOMPurify.sanitize(recaptchaToken);
+        httpRequest.open('POST', '/projects/e-commerce/load-orders', true);
+        httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        httpRequest.setRequestHeader('CSRF-Token', DOMPurify.sanitize(getCSRF()));
+        httpRequest.send(JSON.stringify(data));
+      });
+    });
+    httpRequest.onreadystatechange = function() {
+      if (httpRequest.readyState === XMLHttpRequest.DONE) {
+        if (httpRequest.status === 200) {
+          var response = JSON.parse(DOMPurify.sanitize(httpRequest.responseText));
+          resolve(response);
+        } else {
+          var response = JSON.parse(DOMPurify.sanitize(httpRequest.responseText));
+          reject(response);
+        }
+      }
+    }
+  });
+}
+
 function LoadData() {
   return new Promise(function(resolve, reject) {
     var data = {};
@@ -846,30 +1004,54 @@ function resolveLoadData(response) {
     name: 'home', 
     component: AllListings, 
     props: { categories: categories, listings: listings },
+    meta: { 
+      title: (to) => 'All Products'
+    },
   });
   router.addRoute({
     path: '/add', 
     name: 'add', 
     component: AddProduct, 
     props: { categories: categories, listings: listings },
+    meta: { 
+      title: (to) => 'Add Product'
+    },
+  });
+  router.addRoute({ 
+    path: '/orders', 
+    name: 'orders', 
+    component: Orders, 
+    props: false,
+    meta: { 
+      title: (to) => 'Orders'
+    },
   });
   router.addRoute({ 
     path: '/checkout', 
     name: 'checkout', 
     component: Checkout, 
     props: false,
-  }),
+    meta: { 
+      title: (to) => 'Checkout'
+    },
+  });
   router.addRoute({ 
     path: '/confirmation', 
     name: 'confirmation', 
     component: Confirmation, 
     props: false,
-  }),
+    meta: { 
+      title: (to) => 'Confirmation'
+    },
+  });
   router.addRoute({ 
     path: '/category/:category', 
     name: 'category', 
     component: Category,
     props: categoryProps,
+    meta: { 
+      title: (to) => to.params.category 
+    },
     beforeEnter: (to) => {
       var existingCategory = false;
       for (var i = 0; i < categories.length; i++) {
@@ -893,6 +1075,9 @@ function resolveLoadData(response) {
     name: 'product', 
     component: Product,
     props: productProps,
+    meta: { 
+      title: (to) => to.params.product
+    },
     beforeEnter: (to) => {
       var existingCategory = false, existingProduct = false;
       var categoryIndex = 0;
@@ -926,6 +1111,23 @@ function resolveLoadData(response) {
     name: 'notfound', 
     component: NotFound,
     props: false,
+    meta: { 
+      title: (to) => 'Not Found'
+    },
+  });
+  router.beforeEach((to, from, next) => {
+    let title = to.meta.title(to);
+    title = title.replace('-', ' ');
+    let titleComponents = title.split(' ');
+    titleComponents = titleComponents.map(x => {
+      if (x.length > 1) {
+        return x.substring(0, 1).toUpperCase() + x.substring(1)
+      } else {
+        return x.toUpperCase();
+      }
+    });
+    document.title = titleComponents.join(' ') + ' - Penguin Web Studio';
+    next();
   });
   return router.replace(router.currentRoute.value.fullPath);
 }

@@ -22,6 +22,8 @@ div(ref="contain")
     :loading="loading"
     :costs="costs"
     :errors="errors"
+    :orders="orders"
+    :pagination="pagination"
     @quantity="getQuantityValueUpdates"
     @addToCart="addToCart"
     @getError="getError"
@@ -32,6 +34,8 @@ div(ref="contain")
     @ShippingCost="ShippingCost"
     @clearCart="clearCart"
     @GetTax="GetTax"
+    @GetOrders="GetOrders"
+    @MarkCompleted="MarkCompleted"
   )
 </template>
 
@@ -63,6 +67,8 @@ export default {
     'stripeKey',
     'costs',
     'errors',
+    'orders',
+    'pagination',
   ],
   emits: [
     'SendData',
@@ -71,6 +77,8 @@ export default {
     'FormSubmit',
     'ShippingCost',
     'GetTax',
+    'GetOrders',
+    'MarkCompleted',
   ],
   computed: {
     totalItems() {
@@ -187,6 +195,12 @@ export default {
         country: val.country,
         cart: this.cart,
       });
+    },
+    GetOrders(val) {
+      this.$emit('GetOrders', val);
+    },
+    MarkCompleted(val) {
+      this.$emit('MarkCompleted', val);
     },
   },
 }
